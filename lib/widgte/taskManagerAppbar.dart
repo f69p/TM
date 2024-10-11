@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:untitled/controllers/auth.dart';
 import 'package:untitled/screen/profile_Screen.dart';
 import 'package:untitled/screen/signin_screen.dart';
 
@@ -57,7 +58,8 @@ final bool isProfileScreen;
               ),
             ),
             IconButton(
-                onPressed: () {
+                onPressed: () async {
+                  await AuthController.clearUserData();
                   Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(builder: (context) => SigninScreen()),

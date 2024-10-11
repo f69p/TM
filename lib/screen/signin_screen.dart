@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:untitled/controllers/auth.dart';
 import 'package:untitled/data/models/network_respons.dart';
 import 'package:untitled/data/services/network_caller.dart';
 import 'package:untitled/screen/sign_up_screen.dart';
@@ -155,6 +156,7 @@ Future<void> _signIn() async {
   _inProgress = false;
   setState(() {});
   if (response.isSuccess) {
+    await AuthController.saveAccessToken(response.responseData['token']);
     Navigator.pushAndRemoveUntil( context,
         MaterialPageRoute(builder: (context) =>const MainBottomNavBarScreen()), (
             route) => false);

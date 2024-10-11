@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:untitled/controllers/auth.dart';
+import 'package:untitled/screen/main_bottom_nav_bar_screen.dart';
 import 'package:untitled/screen/signin_screen.dart';
 import 'package:untitled/utils/asset_image.dart';
 import 'package:untitled/widgte/background_screen.dart';
@@ -23,9 +25,18 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void>_moveToNextScreen()async{
     await Future.delayed(const Duration(seconds: 3));
-    Navigator.pushReplacement(context,
-        MaterialPageRoute(builder: (context)=>SigninScreen())
-    );
+    await AuthController.getAccessToken();
+    if(AuthController.isLoggedIn()){
+      Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (context)=>const MainBottomNavBarScreen())
+      );
+    }else{
+      Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (context)=>const SigninScreen())
+      );
+    }
+
+
 
   }
   @override
