@@ -1,24 +1,28 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+
 
 import '../utils/asset_image.dart';
 
-class BackgroundImage extends StatelessWidget {
-  const BackgroundImage({super.key, required this.child});
-final Widget child;
+class ScreenBackground extends StatelessWidget {
+  const ScreenBackground({super.key, required this.child});
+
+  final Widget child;
+
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Stack(
-        children: [
+    Size screenSize = MediaQuery.sizeOf(context);
 
-          SvgPicture.asset(AssetPath.BackgroundImage,
-            height: MediaQuery.sizeOf(context).height,
-            width: MediaQuery.sizeOf(context).width,
-          ),
-         child,
-        ],
-      ),
+    return Stack(
+      children: [
+        SvgPicture.asset(
+          AssetsPath.backgroundSvg,
+          fit: BoxFit.cover,
+          height: screenSize.height,
+          width: screenSize.width,
+        ),
+        SafeArea(child: child),
+      ],
     );
   }
 }

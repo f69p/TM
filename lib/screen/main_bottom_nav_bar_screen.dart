@@ -1,12 +1,11 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:untitled/screen/cancle_task_screen.dart';
-import 'package:untitled/screen/completed_task_screen.dart';
-import 'package:untitled/screen/new_task_screen.dart';
+
 import 'package:untitled/screen/progress_task_screen.dart';
-import 'package:untitled/utils/app_colors.dart';
 
 import '../widgte/taskManagerAppbar.dart';
+import 'cancle_task_screen.dart';
+import 'completed_task_screen.dart';
+import 'new_task_screen.dart';
 
 class MainBottomNavBarScreen extends StatefulWidget {
   const MainBottomNavBarScreen({super.key});
@@ -16,27 +15,26 @@ class MainBottomNavBarScreen extends StatefulWidget {
 }
 
 class _MainBottomNavBarScreenState extends State<MainBottomNavBarScreen> {
-  int _selectedIndex=0;
-
-  final List<Widget>_screen=const[
+  int _selectedIndex = 0;
+  final List<Widget> _screens = const [
     NewTaskScreen(),
     CompletedTaskScreen(),
     CancelledTaskScreen(),
-    ProgressTaskScreen(),
+    ProgressTaskScreen()
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: TaskScreenAppbar(),
-body: _screen[_selectedIndex],
+      appBar: const TMAppBar(),
+      body: _screens[_selectedIndex],
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
-        onDestinationSelected: (index){
-          _selectedIndex=index;
+        onDestinationSelected: (int index) {
+          _selectedIndex = index;
           setState(() {});
         },
-        destinations: [
+        destinations: const [
           NavigationDestination(
             icon: Icon(Icons.new_label),
             label: 'New',
@@ -45,12 +43,16 @@ body: _screen[_selectedIndex],
             icon: Icon(Icons.check_box),
             label: 'Completed',
           ),
-          NavigationDestination(icon: Icon(Icons.close), label: 'Cancelled'),
-          NavigationDestination(icon: Icon(Icons.padding), label: 'Progress'),
+          NavigationDestination(
+            icon: Icon(Icons.close),
+            label: 'Cancelled',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.access_time_outlined),
+            label: 'Progress',
+          )
         ],
       ),
     );
   }
 }
-
-

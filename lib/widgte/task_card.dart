@@ -1,55 +1,86 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:untitled/widgte/snack_bar_message.dart';
 
+import '../data/models/network_respons.dart';
+import '../data/models/task_model.dart';
+import '../data/services/network_caller.dart';
+import '../data/utils-data/urls.dart';
 import '../utils/app_colors.dart';
+import 'center_circular_indicator.dart';
 
-class taskCard extends StatefulWidget {
-  const taskCard({
+
+class TaskCard extends StatefulWidget {
+  const TaskCard({
     super.key,
+    required this.taskModel,
+    required this.onRefreshList,
   });
 
+  final TaskModel taskModel;
+  final VoidCallback onRefreshList;
+
   @override
-  State<taskCard> createState() => _taskCardState();
+  State<TaskCard> createState() => _TaskCardState();
 }
 
-class _taskCardState extends State<taskCard> {
+class _TaskCardState extends State<TaskCard> {
+  String _selectedStatus = '';
+  bool _changeStatusInProgress = false;
+  bool _deleteTaskInProgress = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedStatus = widget.taskModel.status!;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
       elevation: 0,
       color: Colors.white,
-      margin: EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Title of the Task',
+              widget.taskModel.title ?? '',
               style: Theme.of(context).textTheme.titleSmall,
             ),
-            const Text('Description of task'),
-            const Text(
-              'Date: 12/12/2002',
+            Text(
+              widget.taskModel.description ?? '',
             ),
+            Text(
+              'Date: ${widget.taskModel.createdDate ?? ''}',
+            ),
+            const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                _buildTaskChip(),
+                _buildTaskStatusChip(),
                 Wrap(
                   children: [
-                    IconButton(
-                      onPressed:_onTapEditButton,
-                      icon: Icon(Icons.edit),
+                    Visibility(
+                      visible: _changeStatusInProgress == false,
+                      replacement: const CenteredCircularProgressIndicator(),
+                      child: IconButton(
+                        onPressed: _onTapEditButton,
+                        icon: const Icon(Icons.edit),
+                      ),
                     ),
-                    IconButton(
-                      onPressed: _onTapDeleteButton,
-                      icon: Icon(Icons.delete),
+                    Visibility(
+                      visible: _deleteTaskInProgress == false,
+                      replacement: const CenteredCircularProgressIndicator(),
+                      child: IconButton(
+                        onPressed: _onTapDeleteButton,
+                        icon: const Icon(Icons.delete),
+                      ),
                     ),
                   ],
-                ),
+                )
               ],
             )
           ],
@@ -57,41 +88,78 @@ class _taskCardState extends State<taskCard> {
       ),
     );
   }
-void _onTapEditButton(){
-    showDialog(context: context, builder: (context){
-      return AlertDialog(
-        title:Text('Edit Status') ,
-        content:Column(
-          mainAxisSize: MainAxisSize.min,
-          children: ['New',  'Completed' 'Cancelled', 'Progress'].map((e) {
-            return ListTile(
-              onTap: (){
 
+  void _onTapEditButton() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit Status'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: ['New', 'Completed', 'Cancelled', 'Progress'].map((e) {
+              return ListTile(
+                onTap: () {
+                  _changeStatus(e);
+                  Navigator.pop(context);
+                },
+                title: Text(e),
+                selected: _selectedStatus == e,
+                trailing: _selectedStatus == e ? const Icon(Icons.check) : null,
+              );
+            }).toList(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
               },
-              title:Text(e),
-            );
-          }).toList()
-        ) ,
-        actions: [
-          TextButton(onPressed: (){
-            Navigator.pop(context);
-          }, child: Text('Cancle')),
-          TextButton(onPressed: (){}, child: Text('OKay')),
-        ],
-      );
-    });
-}
-void _onTapDeleteButton(){
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-}
- 
-  
-  Widget _buildTaskChip() {
+  Future<void> _onTapDeleteButton() async {
+    _deleteTaskInProgress = true;
+    setState(() {});
+    final NetworkResponse response = await NetworkCaller.getRequest(
+        url: Urls.deleteTask(widget.taskModel.sId!));
+    if (response.isSuccess) {
+      widget.onRefreshList();
+    } else {
+      _deleteTaskInProgress = false;
+      setState(() {});
+      showSnackBarMessage(context, response.errorMessage);
+    }
+  }
+
+  Widget _buildTaskStatusChip() {
     return Chip(
-      label: Text('New'),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.themeColor),
+      label: Text(
+        widget.taskModel.status!,
+        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      side: const BorderSide(
+        color: AppColors.themeColor,
       ),
     );
-  }}
+  }
+
+  Future<void> _changeStatus(String newStatus) async {
+    _changeStatusInProgress = true;
+    setState(() {});
+    final NetworkResponse response = await NetworkCaller.getRequest(
+        url: Urls.changeStatus(widget.taskModel.sId!, newStatus));
+    if (response.isSuccess) {
+      widget.onRefreshList();
+    } else {
+      _changeStatusInProgress = false;
+      setState(() {});
+      showSnackBarMessage(context, response.errorMessage);
+    }
+  }
+}
